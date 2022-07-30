@@ -79,6 +79,12 @@ const main = async () => {
             name: 'newRoleSalery',
             message: "what is the salery for the new role?",
         },
+        {
+            when: (answer) => answer.next === 'Add Role',
+            type: 'input',
+            name: 'newRoleDepartment',
+            message: "what department is the new role in?",
+        },
 
         // ------------------------------------------------ADD DEPARTMENT------------------------------
         {
@@ -88,7 +94,7 @@ const main = async () => {
             message: "what is the name of the new department?",
         },
         ]);
-    let {next, empFirst, empLast, empRole, empManager, updateEmp, updatedEmpRole, createNewRole, newRoleSalery} = main;
+    let {next, empFirst, empLast, empRole, empManager, updateEmp, updatedEmpRole, createNewRole, newRoleSalery, newRoleDepartment, addDepartment} = main;
     console.log(next)
     // , 'Update Employee Role', 'View All Departments', 'Add Department', 'Quit', 'View All Employees'
     if (next === 'View All Employees') {
@@ -98,15 +104,16 @@ const main = async () => {
         console.table(roles)
     }else if (next === 'View All Departments') {
         console.table(departments)
+    }else if (next === 'Add Department') {
+        let newDepartment = {departmentName: addDepartment}
+        db.query(`INSERT INTO department ${newDepartment}`)
     }else if (next === 'Add Employee'){
        let newEmployee = {firstName: empFirst, lastName: empLast, role: empRole, manager: empManager}
         employees.push(newEmployee)
-       
-        console.log(newEmployee)
-        // console.log(employees)
-        
+        db.query(`INSERT INTO employee ${newEmployee}`)
    }else if (next === 'Add Role'){
-    let newRole = {newRole: createNewRole, newSalery: newRoleSalery}
+    let newRole = {newRole: createNewRole, newSalery: newRoleSalery, newRoleDepartment: newRoleDepartment}
+    db.query(`INSERT INTO role ${newRole}`)
     roles.push(newRole)
     console.log(roles)
    }
