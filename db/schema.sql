@@ -1,3 +1,10 @@
+
+
+
+CREATE DATABASE the_foxy_knowledge_seekers;
+
+USE the_foxy_knowledge_seekers;
+
 CREATE TABLE department(
     id INT AUTO_INCREMENT PRIMARY KEY,
     name: VARCHAR(30) NOT NULL,
