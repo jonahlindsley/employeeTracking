@@ -103,7 +103,8 @@ const main = async () => {
         employees.push(newEmployee)
        
         console.log(newEmployee)
-        console.log(employees)
+        // console.log(employees)
+        
    }else if (next === 'Add Role'){
     let newRole = {newRole: createNewRole, newSalery: newRoleSalery}
     roles.push(newRole)
