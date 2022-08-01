@@ -1,26 +1,27 @@
 
+DROP DATABASE IF EXISTS employee_tracking;
 
+CREATE DATABASE employee_tracking;
 
-CREATE DATABASE the_foxy_knowledge_seekers;
-
-USE the_foxy_knowledge_seekers;
+USE employee_tracking;
 
 CREATE TABLE department(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name: VARCHAR(30) NOT NULL,
+    name VARCHAR(40)
     
 );
-CREATE TABLE role(
+CREATE TABLE roles(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title: VARCHAR(30) NOT NULL,
-    salary: DECIMAL,
-    department_id:INT
+    title VARCHAR(40),
+    salary INT,
+    department_id INT
     
 );
-CREATE TABLE department(
+CREATE TABLE employees(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name: VARCHAR(30) NOT NULL,
-    last_name: VARCHAR(30) NOT NULL,
-    role_id:INT,
-    manager_id:INT
+    first_name VARCHAR(40),
+    last_name VARCHAR(40),
+    role_id INT,
+    manager_id INT
     );
+    
