@@ -13,40 +13,66 @@ async function employees() {
     console.table(results[0]);
 }
 function viewAllEmployees(data) {
-      
     employees()
-    .then(main)
+        .then(main)
 };
-// const employees = db.query('SELECT * FROM employees')
+async function allEmployees(dep_id) {
+    const results = await db.query(`SELECT * FROM employees`)
+    // console.table(results[0])
+    return results[0]
+}
 
-async function roles() {
-    const results = await db.query(`SELECT * FROM roles;`);
+
+async function getTheRoles() {
+    const results = await db.query(`
+    SELECT Roles.title, Roles.id, Department.name, Roles.salary
+    FROM Roles
+    JOIN Department on Roles.title = Department.id;
+    `);
     console.table(results[0]);
 }
-const role =  db.query(`SELECT * FROM roles;`);
+
+function roles() {
+    getTheRoles()
+        .then(main)
+}
+async function getTheRoles(dep_id) {
+    const results = await db.query(`SELECT title FROM roles WHERE department_id=${dep_id};`)
+    // console.table(results[0])
+    return results[0]
+}
+async function allRoles(dep_id) {
+    const results = await db.query(`SELECT title, id FROM roles`)
+    // console.table(results[0])
+    console.log( results[0])
+    return results[0]
+}
+
+// SELECT Roles.title, Roles.role_id, Departments.department, Roles.salary
+// FROM Roles
+// JOIN Departments on Roles.title = Departments.dep_role;
+
+const role = db.query(`SELECT * FROM roles;`);
 
 async function viewAllDepartments() {
     const results = await db.query(`SELECT * FROM department;`)
-    console.table(results[0])
+    // console.table(results[0])
+    return results[0]
 }
-async function viewAllDepartments() {
-    const results = await db.query(`SELECT * FROM department;`)
-    console.table(results[0])
-}
-function departments(){
+function departments() {
     viewAllDepartments()
-    .then(main)
-   
+        .then(main)
 }
 async function managerList() {
     const results = await db.query(`SELECT first_name FROM employees WHERE manager_id = none;`);
     console.table(results[0]);
 }
 // get all departments, then in the prompt we show them all the departments as a list then they can select the one that tthey ewant to add a new role to when they select it i can grab the id of the selected department
-let managers = [managerList, 'none']
+
 
 async function department() {
-    const results = await db.query(`SELECT * FROM department;`)}
+    const results = await db.query(`SELECT * FROM department;`)
+}
 console.log(department)
 const main = async () => {
     const main = await inquirer.prompt(
@@ -73,17 +99,14 @@ const main = async () => {
             }
         })
 }
-// SELECT Roles.title, Roles.role_id, Departments.department, Roles.salary
-// FROM Roles
-// JOIN Departments on Roles.title = Departments.dep_role;
 
 // SELECT Employees.id, Employees.first_name, Employees.last_name, Employees.title, Departments.department, Roles.salary, Employees.manager
 // FROM Employees, Departments, Roles
 // WHERE Employees.title = Roles.title AND Roles.title = Departments.dep_role;
 
 // ==============================================ADD EMPLOYEE=====================================
-function addEmployee(data) {
-    const allDepartments =
+async function addEmployee(data) {
+    var departments = await viewAllDepartments()
     inquirer.prompt([
         {
             type: 'input',
@@ -97,43 +120,94 @@ function addEmployee(data) {
         },
         {
             type: 'list',
-            name: 'empRole',
-            message: "what is the employees role?",
-            choices: role
-        },
-        {
-            type: 'list',
-            name: 'empManager',
-            message: "who is the employees manager?",
-            choices: managers
-        }
-    ]).then((answer) => {
-        db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${answer.empFirst}', '${answer.empLast}', '${answer.empRole}', '${answer.empManager}');`)
-    }).then(main)
+            name: 'empdepartment',
+            message: "what is the employees department?",
+            choices: departments.map(dep => {
+                return {
+                    name: dep.name,
+                    value: dep.id
+                }
+            })
+        }])
+        .then((answer) => {
+            // make a req for all deps return the roles in the department they chose
+            // async function viewAllDepartments() {
+                // console.table(results[0])
+                var halfAMan = [answer.empFirst, answer.empLast, answer.empdepartment]
+
+                return halfAMan
+            })
+            .then((dep_id) => {
+                console.log(`${dep_id[2]}`)
+                oneDepartment()
+                async function oneDepartment() {
+                const results = await getTheRoles(dep_id[2])
+                
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'empRole',
+                        message: "what is the employees role?",
+                        choices: ['4', '5']
+                        // results[0].map(dep => {
+                        //     return {
+                        //         name: dep.title,
+                        //         value: dep.id
+                        //     }
+                        // })
+                    },
+                    {
+                        type: 'list',
+                        name: 'empManager',
+                        message: "who is the employees manager?",
+                        choices: ['managers', 'thing']
+                    }
+                ])}
+            
+            }).then((answer) => {
+                console.log('this works!!!!!')
+                // db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${answer.empFirst}', '${answer.empLast}', '${answer.empRole}', '${answer.empManager}');`)
+            }).then(main)
+
+    // break here and retereive the roles that are under the department then start another prompt with the last questions
+
 };
 // ================================================UPDATE EMPLOYEE ROLE=====================================
-function UpdateEmployeeRole(data) {
+async function UpdateEmployeeRole(data) {
+    var updateAnEmployee =  await allEmployees()
+    var updateARole =  await allRoles()
     inquirer.prompt([{
         type: 'list',
         name: 'updateEmp',
         message: "which employee do you want to update?",
-        choices: employees
+        choices: updateAnEmployee.map(dep => {
+            return {
+                name: dep.first_name,
+                value: dep.id
+            }
+        })
     },
     {
         type: 'list',
         name: 'updatedEmpRole',
         message: "what do you want the selected employees new role to be?",
-        choices: role
-    }
+        choices: updateARole.map(dep => {
+            return {
+                name: dep.title,
+                value: dep.id
+            }
+        })
+    },
     ]).then((answer) => {
-        db.query(`UPDATE employees SET name='${answer.updatedEmpRole}'` )
-
-    })
+        console.log(answer)
+        db.query(`UPDATE employees SET role_id='${answer.updatedEmpRole}' WHERE id='${answer.updateEmp}'`)
+        console.log(`updated role for ${'katie'}`)
+    }).then(main)
 };
 // ============================================ADD DEPARTMENT========================================
 function addDepartment(data) {
     inquirer.prompt([{
-
         type: 'input',
         name: 'addDepartment',
         message: "what is the name of the new department?",
@@ -145,6 +219,8 @@ function addDepartment(data) {
 //===========================================ADD ROLE=================================================
 async function addRole(data) {
 
+    let roleChoices = await db.query(`SELECT department_id FROM roles;`);
+    // console.log(roleChoices)
     inquirer.prompt([
         {
             type: 'input',
@@ -160,18 +236,24 @@ async function addRole(data) {
             type: 'list',
             name: 'newRoleDepartment',
             message: "what department is the new role in?",
-            choices: [].map(dep => {
+            choices: roleChoices.map(dep => {
                 return {
-                    name: dep.department,
-                    value: dep.id
+                    name: dep.roles,
+                    value: dep.department_id
                 }
             })
+            // .map(dep => {
+            // return {
+            //     name: dep.department,
+            //     value: dep.id
+            // }
+            // })
         }
     ]).then((answer) => {
         let newDepartment = answer.newRoleDepartment
-        let departmentId = db.query(`SELECT id FROM department WHERE name=${newDepartment}`)
+        // let departmentId = db.query(`SELECT id FROM department WHERE name=${newDepartment}`)
         let newSalery = parseInt(answer.newRoleSalery)
-        db.query(`INSERT INTO roles (title, salary, department_id) values ('${answer.createNewRole}',' ${newSalery}', '${departmentId}')`)
+        db.query(`INSERT INTO roles (title, salary, department_id) values ('${answer.createNewRole}',' ${newSalery}', '${answer.newRoleDepartment}')`)
     }).then(main)
 };
 
