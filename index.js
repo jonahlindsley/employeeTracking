@@ -22,18 +22,18 @@ async function allEmployees(dep_id) {
     return results[0]
 }
 
-
-async function getTheRoles() {
+// job title, role id, the department that role belongs to, and the salary for that role
+async function getAllTheRoles() {
     const results = await db.query(`
-    SELECT Roles.title, Roles.id, Department.name, Roles.salary
-    FROM Roles
-    JOIN Department on Roles.title = Department.id;
+    SELECT roles.title AS 'JOB TITLE' , roles.id AS 'ROLE NUMBER', department.name AS DEPARTMENT, roles.salary AS SALERY
+    FROM roles
+    JOIN department on roles.department_id=department.id;
     `);
     console.table(results[0]);
 }
 
 function roles() {
-    getTheRoles()
+    getAllTheRoles()
         .then(main)
 }
 async function getTheRoles(dep_id) {
@@ -60,8 +60,13 @@ async function viewAllDepartments() {
     return results[0]
 }
 function departments() {
-    viewAllDepartments()
+    showDepartments()
         .then(main)
+}
+async function showDepartments() {
+    const results = await db.query(`SELECT * FROM department;`)
+    console.table(results[0])
+    return results[0]
 }
 async function managerList() {
     const results = await db.query(`SELECT first_name FROM employees WHERE manager_id = none;`);
@@ -202,7 +207,7 @@ async function UpdateEmployeeRole(data) {
     ]).then((answer) => {
         console.log(answer)
         db.query(`UPDATE employees SET role_id='${answer.updatedEmpRole}' WHERE id='${answer.updateEmp}'`)
-        console.log(`updated role for ${'katie'}`)
+        console.log(`successfully updated employee role`)
     }).then(main)
 };
 // ============================================ADD DEPARTMENT========================================
@@ -219,7 +224,7 @@ function addDepartment(data) {
 //===========================================ADD ROLE=================================================
 async function addRole(data) {
 
-    let roleChoices = await db.query(`SELECT department_id FROM roles;`);
+    var departments = await viewAllDepartments();
     // console.log(roleChoices)
     inquirer.prompt([
         {
@@ -236,24 +241,19 @@ async function addRole(data) {
             type: 'list',
             name: 'newRoleDepartment',
             message: "what department is the new role in?",
-            choices: roleChoices.map(dep => {
+            choices: departments.map(dep => {
                 return {
-                    name: dep.roles,
-                    value: dep.department_id
+                    name: dep.name,
+                    value: dep.id
                 }
             })
-            // .map(dep => {
-            // return {
-            //     name: dep.department,
-            //     value: dep.id
-            // }
-            // })
+
+    
         }
     ]).then((answer) => {
-        let newDepartment = answer.newRoleDepartment
-        // let departmentId = db.query(`SELECT id FROM department WHERE name=${newDepartment}`)
         let newSalery = parseInt(answer.newRoleSalery)
-        db.query(`INSERT INTO roles (title, salary, department_id) values ('${answer.createNewRole}',' ${newSalery}', '${answer.newRoleDepartment}')`)
+        db.query(`INSERT INTO roles (title, salary, department_id) values ('${answer.createNewRole}','${newSalery}', '${answer.newRoleDepartment}')`)
+        console.log(`added ${answer.createNewRole} to roles`)
     }).then(main)
 };
 
