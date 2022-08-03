@@ -48,7 +48,6 @@ async function getTheRoles() {
 }
 async function allRoles(dep_id) {
     const results = await db.query(`SELECT title, id FROM roles`)
-    console.log(results[0])
     return results[0]
 }
 
